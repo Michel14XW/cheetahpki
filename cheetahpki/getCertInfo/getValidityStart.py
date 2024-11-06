@@ -16,7 +16,7 @@ def getValidityStart(cert_pem_path):
     cert = x509.load_pem_x509_certificate(cert_data, default_backend())
     
     # Extraire la date de début de validité du certificat
-    validity_start = cert.not_valid_before
+    validity_start = cert.not_valid_before_utc
     
     return validity_start
 
@@ -25,6 +25,6 @@ def getValidityStart(cert_pem_path):
 """
 # Exemple d'utilisation
 cert_path = "certificate/test1_certificate.pem"
-validity_start = get_certificate_validity_start(cert_path)
+validity_start = getValidityStart(cert_path)
 print(f"Le certificat est valide à partir de : {validity_start}")
 """

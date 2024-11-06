@@ -26,6 +26,7 @@ pip install git+https://github.com/Michel14XW/cheetahpki.git
 ```bash
 cheetahpki/
 ├── generateKeyPair.py
+├── exceptions.py
 ├── createSelfSignedRootCert.py
 ├── createSignedCert.py
 ├── checkCertValidity.py
