@@ -5,6 +5,7 @@ cheetahpki/__init__.py
 cheetahpki/checkCertValidity.py
 cheetahpki/createSelfSignedRootCert.py
 cheetahpki/createSignedCert.py
+cheetahpki/exceptions.py
 cheetahpki/generateKeyPair.py
 cheetahpki.egg-info/PKG-INFO
 cheetahpki.egg-info/SOURCES.txt
