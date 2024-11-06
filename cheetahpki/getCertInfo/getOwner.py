@@ -28,6 +28,6 @@ def getOwner(cert_pem_path):
 """
 # Exemple d'utilisation
 cert_path = "certificate/test1_certificate.pem"
-owner = get_certificate_owner(cert_path)
+owner = getOwner(cert_path)
 print(f"Le propriétaire du certificat est : {owner}")
 """

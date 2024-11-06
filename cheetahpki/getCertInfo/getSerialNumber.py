@@ -25,6 +25,6 @@ def getSerialNumber(cert_pem_path):
 """
 # Exemple d'utilisation
 cert_path = "certificate/test1_certificate.pem"
-serial_number = get_certificate_serial_number(cert_path)
+serial_number = getSerialNumber(cert_path)
 print(f"Le numéro de série du certificat est : {serial_number}")
 """

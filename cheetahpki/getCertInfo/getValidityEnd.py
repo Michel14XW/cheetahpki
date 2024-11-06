@@ -16,7 +16,7 @@ def getValidityEnd(cert_pem_path):
     cert = x509.load_pem_x509_certificate(cert_data, default_backend())
     
     # Extraire la date de fin de validité du certificat
-    validity_end = cert.not_valid_after
+    validity_end = cert.not_valid_after_utc
     
     return validity_end
 
@@ -24,6 +24,6 @@ def getValidityEnd(cert_pem_path):
 """
 # Exemple d'utilisation
 cert_path = "certificate/test1_certificate.pem"
-validity_end = get_certificate_validity_end(cert_path)
+validity_end = getValidityEnd(cert_path)
 print(f"Le certificat expire le : {validity_end}")
 """

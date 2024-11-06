@@ -5,9 +5,22 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 import datetime
+import uuid
+import re
+
+from exceptions import (
+    PrivateKeyFileNotFoundError,
+    PrivateKeyLoadError,
+    CertificateSaveError
+)
+
+def is_valid_email(email):
+    """ Vérifie si l'email a un format valide. """
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
 
 def createSelfSignedRootCert(pseudo, company, city, region, country_code, email, 
-                               valid_days, private_key_path, key_password=None):
+                             valid_days, private_key_path, key_password=None, 
+                             output_folder=None, output_filename=None):
     """
     Crée un certificat auto-signé pour une CA root sans champ département.
 
@@ -21,34 +34,56 @@ def createSelfSignedRootCert(pseudo, company, city, region, country_code, email,
         valid_days (int): Durée de validité du certificat en jours.
         private_key_path (str): Chemin vers la clé privée de la CA root.
         key_password (str, optional): Mot de passe pour déchiffrer la clé privée de la CA root (si nécessaire).
-    
+        output_folder (str, optional): Dossier de destination du certificat. Par défaut "certificate".
+        output_filename (str, optional): Nom du fichier de sortie sans extension. Par défaut "root_ca_certificate_<UID>".
+
     Returns:
         str: Chemin du fichier où le certificat auto-signé est enregistré.
+
+    Raises:
+        PrivateKeyFileNotFoundError: Si le fichier de clé privée est introuvable.
+        PrivateKeyLoadError: Si le chargement de la clé privée échoue.
+        CertificateSaveError: Si l'enregistrement du certificat échoue.
     """
+
+    # Valider les paramètres d'entrée
+    if not pseudo or not company:
+        raise ValueError("Les champs 'pseudo' et 'company' sont obligatoires.")
+    
+    if not is_valid_email(email):
+        raise ValueError("Adresse email invalide.")
+
+    if valid_days <= 0:
+        raise ValueError("La durée de validité doit être positive.")
 
     # Résoudre le chemin complet du fichier de la clé privée
     private_key_path = os.path.abspath(private_key_path)
     
     # Charger la clé privée de la CA root
-    with open(private_key_path, "rb") as private_key_file:
-        private_key = serialization.load_pem_private_key(
-            private_key_file.read(),
-            password=key_password.encode() if key_password else None,
-            backend=default_backend()
-        )
+    try:
+        with open(private_key_path, "rb") as private_key_file:
+            private_key = serialization.load_pem_private_key(
+                private_key_file.read(),
+                password=key_password.encode() if key_password else None,
+                backend=default_backend()
+            )
+    except FileNotFoundError:
+        raise PrivateKeyFileNotFoundError("Le fichier de clé privée est introuvable.")
+    except (ValueError, TypeError) as e:
+        raise PrivateKeyLoadError(f"Échec du chargement de la clé privée : {e}")
 
     # Créer les informations du sujet (la CA root elle-même)
     subject = issuer = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, country_code),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, region),
         x509.NameAttribute(NameOID.LOCALITY_NAME, city),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, company),  # La compagnie sans département
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, company),
         x509.NameAttribute(NameOID.COMMON_NAME, pseudo),
         x509.NameAttribute(NameOID.EMAIL_ADDRESS, email),
     ])
 
     # Définir la période de validité du certificat
-    valid_from = datetime.datetime.utcnow()
+    valid_from = datetime.datetime.now(datetime.UTC)
     valid_to = valid_from + datetime.timedelta(days=valid_days)
 
     # Générer un numéro de série unique pour le certificat
@@ -58,7 +93,7 @@ def createSelfSignedRootCert(pseudo, company, city, region, country_code, email,
     certificate = x509.CertificateBuilder().subject_name(
         subject
     ).issuer_name(
-        issuer  # Émetteur identique au sujet (auto-signature)
+        issuer
     ).public_key(
         private_key.public_key()
     ).serial_number(
@@ -71,18 +106,36 @@ def createSelfSignedRootCert(pseudo, company, city, region, country_code, email,
         x509.BasicConstraints(ca=True, path_length=None),  # Indique que c'est un certificat CA
         critical=True
     ).sign(
-        private_key=private_key,  # Utilise la clé privée de la CA root pour signer le certificat
+        private_key=private_key,
         algorithm=hashes.SHA256(),
         backend=default_backend()
     )
 
-    # Enregistrer le certificat dans un fichier dans le dossier "certificate"
-    os.makedirs('certificate', exist_ok=True)  # Crée le dossier s'il n'existe pas
-    cert_filename = os.path.join('certificate', "root_ca_certificate.pem")
-    with open(cert_filename, "wb") as cert_file:
-        cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+    # Définir le dossier de destination
+    output_folder = output_folder or 'certificate'
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Définir le nom du fichier de sortie avec UID par défaut si aucun nom n'est spécifié
+    if not output_filename:
+        uid = uuid.uuid4().hex[:8]
+        output_filename = f"root_ca_certificate_{uid}"
+    
+    # Ajouter l'extension .pem si elle n'est pas déjà incluse
+    if not output_filename.endswith('.pem'):
+        output_filename += '.pem'
+
+    cert_filename = os.path.join(output_folder, output_filename)
+
+    # Enregistrer le certificat dans le fichier spécifié
+    try:
+        with open(cert_filename, "wb") as cert_file:
+            cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+    except OSError as e:
+        raise CertificateSaveError(f"Échec de l'enregistrement du certificat : {e}")
 
     return cert_filename
+
+
 
 
 """
@@ -99,7 +152,12 @@ if __name__ == "__main__":
     # Informations pour la CA root
     private_key_path = input("Entrez le chemin vers la clé privée de la CA root : ")
     key_password = input("Entrez le mot de passe de la clé privée de la CA root (laisser vide si aucun) : ") or None
+    output_folder = input("Entrez le dossier de destination du certificat (laisser vide pour 'certificate') : ") or None
+    output_filename = input("Entrez le nom du fichier de sortie (sans extension, laisser vide pour générer un nom par défaut) : ") or None
 
-    cert_file = create_self_signed_root_cert(pseudo, company, city, region, country_code, email, valid_days, private_key_path, key_password)
-    print(f"Certificat CA root auto-signé enregistré sous: {cert_file}")
+    try:
+        cert_file = createSelfSignedRootCert(pseudo, company, city, region, country_code, email, valid_days, private_key_path, key_password, output_folder, output_filename)
+        print(f"Certificat CA root auto-signé enregistré sous: {cert_file}")
+    except Exception as e:
+        print(e)
 """

@@ -1,19 +1,33 @@
+import os
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 import datetime
-import os
+import re
 
-def createSignedCert(public_key_path, uid, pseudo, company, department, city, region, country_code, email,
-                              valid_days, ca_private_key_path, ca_cert_path, ca_key_password=None):
+from exceptions import (
+    PublicKeyFileNotFoundError,
+    PublicKeyLoadError,
+    PrivateKeyFileNotFoundError,
+    PrivateKeyLoadError,
+    CertificateLoadError,
+    CertificateSaveError
+)
+
+def is_valid_email(email):
+    """ Vérifie si l'email a un format valide. """
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+
+def createSignedCert(public_key_path, pseudo, company, department, city, region, country_code, email,
+                     valid_days, ca_private_key_path, ca_cert_path, ca_key_password=None,
+                     output_folder="certificate", output_filename=None):
     """
     Crée un certificat utilisateur et le signe avec la clé privée de la CA intermédiaire.
 
     Args:
         public_key_path (str): Chemin vers la clé publique de l'utilisateur.
-        uid (str): UID unique de l'utilisateur.
         pseudo (str): Pseudo ou nom de l'utilisateur.
         company (str): Compagnie de l'utilisateur.
         department (str): Département de l'utilisateur (lié à la CA intermédiaire).
@@ -25,32 +39,67 @@ def createSignedCert(public_key_path, uid, pseudo, company, department, city, re
         ca_private_key_path (str): Chemin vers la clé privée de la CA intermédiaire.
         ca_cert_path (str): Chemin vers le certificat de la CA intermédiaire.
         ca_key_password (str, optional): Mot de passe pour déchiffrer la clé privée de la CA (si nécessaire).
-    
+        output_folder (str, optional): Dossier de destination du certificat. ( "\""" le back slash est utilisé comme séparateur) Par défaut "certificate".
+        output_filename (str, optional): Nom du fichier de sortie sans extension. Par défaut "<pseudo>_certificate".
+
     Returns:
         str: Chemin du fichier où le certificat est enregistré.
+
+    Raises:
+        PublicKeyFileNotFoundError: Si le fichier de clé publique de l'utilisateur est introuvable.
+        PublicKeyLoadError: Si le chargement de la clé publique échoue.
+        CertificateLoadError: Si le chargement du certificat de la CA échoue.
+        PrivateKeyFileNotFoundError: Si le fichier de clé privée de la CA intermédiaire est introuvable.
+        PrivateKeyLoadError: Si le chargement de la clé privée de la CA échoue.
+        CertificateSaveError: Si l'enregistrement du certificat échoue.
     """
 
+    # Valider les paramètres d'entrée
+    if not pseudo or not company:
+        raise ValueError("Les champs 'pseudo' et 'company' sont obligatoires.")
+    
+    if not is_valid_email(email):
+        raise ValueError("Adresse email invalide.")
+    
+    if valid_days <= 0:
+        raise ValueError("La durée de validité doit être positive.")
+    
     # Charger la clé publique de l'utilisateur
-    with open(public_key_path, "rb") as public_key_file:
-        public_key = serialization.load_pem_public_key(
-            public_key_file.read(),
-            backend=default_backend()
-        )
+    try:
+        with open(public_key_path, "rb") as public_key_file:
+            public_key = serialization.load_pem_public_key(
+                public_key_file.read(),
+                backend=default_backend()
+            )
+    except FileNotFoundError:
+        raise PublicKeyFileNotFoundError("Le fichier de clé publique de l'utilisateur est introuvable.")
+    except Exception as e:
+        raise PublicKeyLoadError(f"Erreur lors du chargement de la clé publique: {e}")
 
     # Charger le certificat de la CA intermédiaire
-    with open(ca_cert_path, "rb") as ca_cert_file:
-        ca_cert = x509.load_pem_x509_certificate(
-            ca_cert_file.read(),
-            backend=default_backend()
-        )
+    try:
+        with open(ca_cert_path, "rb") as ca_cert_file:
+            ca_cert = x509.load_pem_x509_certificate(
+                ca_cert_file.read(),
+                backend=default_backend()
+            )
+    except FileNotFoundError:
+        raise CertificateLoadError("Le fichier de certificat de la CA intermédiaire est introuvable.")
+    except Exception as e:
+        raise CertificateLoadError(f"Erreur lors du chargement du certificat de la CA: {e}")
 
     # Charger la clé privée de la CA intermédiaire
-    with open(ca_private_key_path, "rb") as ca_private_key_file:
-        ca_private_key = serialization.load_pem_private_key(
-            ca_private_key_file.read(),
-            password=ca_key_password.encode() if ca_key_password else None,
-            backend=default_backend()
-        )
+    try:
+        with open(ca_private_key_path, "rb") as ca_private_key_file:
+            ca_private_key = serialization.load_pem_private_key(
+                ca_private_key_file.read(),
+                password=ca_key_password.encode() if ca_key_password else None,
+                backend=default_backend()
+            )
+    except FileNotFoundError:
+        raise PrivateKeyFileNotFoundError("Le fichier de clé privée de la CA intermédiaire est introuvable.")
+    except Exception as e:
+        raise PrivateKeyLoadError(f"Erreur lors du chargement de la clé privée de la CA: {e}")
 
     # Créer les informations du sujet (utilisateur)
     subject = x509.Name([
@@ -64,7 +113,7 @@ def createSignedCert(public_key_path, uid, pseudo, company, department, city, re
     ])
 
     # Définir la période de validité du certificat
-    valid_from = datetime.datetime.utcnow()
+    valid_from = datetime.datetime.now(datetime.UTC)
     valid_to = valid_from + datetime.timedelta(days=valid_days)
 
     # Générer un numéro de série unique pour le certificat
@@ -92,35 +141,41 @@ def createSignedCert(public_key_path, uid, pseudo, company, department, city, re
         backend=default_backend()
     )
 
-    # Enregistrer le certificat dans un fichier dans le dossier "certificate"
-    os.makedirs('certificate', exist_ok=True)  # Crée le dossier s'il n'existe pas
-    cert_filename = f"certificate/{uid}_certificate.pem"
-    with open(cert_filename, "wb") as cert_file:
-        cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+    # Définir le nom et l'emplacement de sauvegarde du certificat
+    output_filename = output_filename or f"{pseudo}_certificate.pem"
+    output_path = os.path.join(output_folder, output_filename)
     
-    return cert_filename
+    # Enregistrer le certificat dans le fichier spécifié
+    try:
+        os.makedirs(output_folder, exist_ok=True)  # Crée le dossier s'il n'existe pas
+        with open(output_path, "wb") as cert_file:
+            cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+    except Exception as e:
+        raise CertificateSaveError(f"Erreur lors de l'enregistrement du certificat: {e}")
+    
+    return output_path
+
 
 
 """
 # Exemple d'utilisation
 if __name__ == "__main__":
-    public_key_path = input("Entrez le chemin vers la clé publique de l'utilisateur : ")
-    uid = input("Entrez l'UID de l'utilisateur : ")
-    pseudo = input("Entrez le nom ou pseudo de l'utilisateur : ")
-    company = input("Entrez la compagnie de l'utilisateur : ")
-    department = input("Entrez le département de l'utilisateur : ")
-    city = input("Entrez la ville de résidence de l'utilisateur : ")
-    region = input("Entrez la région de résidence de l'utilisateur : ")
-    country_code = input("Entrez le code pays (2 lettres) : ")
-    email = input("Entrez l'email de l'utilisateur : ")
-    valid_days = int(input("Entrez la durée de validité du certificat (en jours) : "))
-    
-    # Informations pour la CA intermédiaire
-    ca_private_key_path = input("Entrez le chemin vers la clé privée de la CA intermédiaire : ")
-    ca_cert_path = input("Entrez le chemin vers le certificat de la CA intermédiaire : ")
-    ca_key_password = input("Entrez le mot de passe de la clé privée de la CA intermédiaire (laisser vide si aucun) : ") or None
-    
-    cert_file = create_signed_certificate(public_key_path, uid, pseudo, company, department, city, region, country_code,
-                                          email, valid_days, ca_private_key_path, ca_cert_path, ca_key_password)
-    print(f"Certificat utilisateur signé enregistré sous: {cert_file}")
+    public_key_path = input("Chemin de la clé publique : ")
+    pseudo = input("Nom ou pseudo de l'utilisateur : ")
+    company = input("Nom de la compagnie : ")
+    department = input("Département : ")
+    city = input("Ville : ")
+    region = input("Région : ")
+    country_code = input("Code pays (2 lettres) : ")
+    email = input("Adresse email : ")
+    valid_days = int(input("Durée de validité (jours) : "))
+    ca_private_key_path = input("Chemin de la clé privée de la CA intermédiaire : ")
+    ca_cert_path = input("Chemin du certificat de la CA intermédiaire : ")
+    ca_key_password = input("Mot de passe pour la clé privée de la CA (laisser vide si aucun) : ") or None
+
+    cert_file = createSignedCert(
+        public_key_path, pseudo, company, department, city, region, country_code, email,
+        valid_days, ca_private_key_path, ca_cert_path, ca_key_password
+    )
+    print(f"Certificat généré et enregistré à : {cert_file}")
 """
