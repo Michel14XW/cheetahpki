@@ -86,6 +86,8 @@ Crée un certificat auto-signé pour une CA root sans champ département.
         valid_days (int): Durée de validité du certificat en jours.
         private_key_path (str): Chemin vers la clé privée de la CA root.
         key_password (str, optional): Mot de passe pour déchiffrer la clé privée de la CA root (si nécessaire).
+        output_folder (str, optional): Dossier de destination du certificat. Par défaut "certificate".
+        output_filename (str, optional): Nom du fichier de sortie sans extension. Par défaut 'root_ca_certificate_<UID>'.
     
     Returns:
         str: Chemin du fichier où le certificat auto-signé est enregistré.
@@ -116,7 +118,6 @@ Fonction : createSignedCert
 
     Args:
         public_key_path (str): Chemin vers la clé publique de l'utilisateur.
-        uid (str): UID unique de l'utilisateur.
         pseudo (str): Pseudo ou nom de l'utilisateur.
         company (str): Compagnie de l'utilisateur.
         department (str): Département de l'utilisateur (lié à la CA intermédiaire).
@@ -128,6 +129,8 @@ Fonction : createSignedCert
         ca_private_key_path (str): Chemin vers la clé privée de la CA intermédiaire.
         ca_cert_path (str): Chemin vers le certificat de la CA intermédiaire.
         ca_key_password (str, optional): Mot de passe pour déchiffrer la clé privée de la CA (si nécessaire).
+        output_folder (str, optional): Dossier de destination du certificat. ( "\""" le back slash est utilisé comme séparateur) Par défaut "certificate".
+        output_filename (str, optional): Nom du fichier de sortie sans extension. Par défaut '<pseudo>_certificate'.
     
     Returns:
         str: Chemin du fichier où le certificat est enregistré.

@@ -21,7 +21,7 @@ from .exceptions import (
 )
 from .generateKeyPair import generateKeyPair
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 VERSION = __version__.split(".")
 
 __all__ = (
