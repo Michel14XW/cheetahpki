@@ -8,7 +8,7 @@ import datetime
 import uuid
 import re
 
-from exceptions import (
+from .exceptions import (
     PrivateKeyFileNotFoundError,
     PrivateKeyLoadError,
     CertificateSaveError

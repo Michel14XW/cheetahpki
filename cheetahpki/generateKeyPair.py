@@ -2,7 +2,7 @@ import os
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from exceptions import (KeySaveError, 
+from .exceptions import (KeySaveError, 
                         InvalidKeySizeError, KeyPairGenerationError, 
                         DirectoryCreationError)
 

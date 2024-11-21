@@ -7,7 +7,7 @@ from cryptography.hazmat.backends import default_backend
 import datetime
 import re
 
-from exceptions import (
+from .exceptions import (
     PublicKeyFileNotFoundError,
     PublicKeyLoadError,
     PrivateKeyFileNotFoundError,
