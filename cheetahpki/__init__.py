@@ -1,6 +1,10 @@
 from .checkCertValidity import checkCertValidity
 from .createSelfSignedRootCert import is_valid_email, createSelfSignedRootCert
 from .createSignedCert import is_valid_email, createSignedCert
+from .getCertInfo.getSerialNumber import getSerialNumber
+from .getCertInfo.getOwner import getOwner
+from .getCertInfo.getValidityEnd import getValidityEnd
+from .getCertInfo.getValidityStart import getValidityStart
 from .exceptions import (
     CertificateError,
     CertificateFileNotFoundError,
