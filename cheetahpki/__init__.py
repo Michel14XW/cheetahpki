@@ -25,7 +25,7 @@ from .exceptions import (
 )
 from .generateKeyPair import generateKeyPair
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 VERSION = __version__.split(".")
 
 __all__ = (
@@ -50,4 +50,10 @@ __all__ = (
     'KeySaveError',
     'DirectoryCreationError',
     'generateKeyPair',
+    'getOwner',
+    'getSerialNumber',
+    'getValidityStart',
+    'getValidityEnd',
 )
+
+# update version 0.0.4
