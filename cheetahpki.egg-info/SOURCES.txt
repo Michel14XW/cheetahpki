@@ -7,6 +7,7 @@ cheetahpki/createSelfSignedRootCert.py
 cheetahpki/createSignedCert.py
 cheetahpki/exceptions.py
 cheetahpki/generateKeyPair.py
+cheetahpki/getCertInfo.py
 cheetahpki.egg-info/PKG-INFO
 cheetahpki.egg-info/SOURCES.txt
 cheetahpki.egg-info/dependency_links.txt
