@@ -6,14 +6,14 @@ from .exceptions import (KeySaveError,
                         InvalidKeySizeError, KeyPairGenerationError, 
                         DirectoryCreationError)
 
-def generateKeyPair(uid, key_size=2048, key_directory="keys", private_key_password=None):
+def generateKeyPair(uid, key_size=2048, key_directory="tmp/keys", private_key_password=None):
     """
     Génère une paire de clés RSA et les enregistre dans un sous-dossier avec l'UID du propriétaire.
     
     Args:
         uid (str): Identifiant unique pour le propriétaire des clés : prenom ou pseudo.
         key_size (int): Taille des clés RSA à générer (par défaut 2048 bits).
-        key_directory (str): Nom du sous-dossier où les clés seront enregistrées (par défaut 'keys').
+        key_directory (str): Chemin où les clés seront enregistrées (par défaut dans le dossier 'tmp/keys').
         private_key_password (str, optional): Mot de passe pour chiffrer la clé privée. Si None, pas de chiffrement.
     
     Returns:
@@ -94,6 +94,7 @@ def generateKeyPair(uid, key_size=2048, key_directory="keys", private_key_passwo
 if __name__ == "__main__":
 
     uid = input("Entrez l'UID du propriétaire des clés: ")
+    key_directory = input("Entrez le dossier de destination : ")
     use_password = input("Voulez-vous chiffrer la clé privée avec un mot de passe ? (oui/non): ").strip().lower()
 
     if use_password == 'oui':
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     else:
         private_key_password = None
 
-    private_key_file, public_key_file = generateKeyPair(uid, private_key_password=private_key_password)
+    private_key_file, public_key_file = generateKeyPair(uid, key_directory=key_directory, private_key_password=private_key_password)
 
     print(f"Clé privée enregistrée sous: {private_key_file}")
     print(f"Clé publique enregistrée sous: {public_key_file}")

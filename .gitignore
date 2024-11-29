@@ -18,5 +18,9 @@ keys/
 certificate
 certificate/
 
+# Dossier temporaires
+tmp
+tmp/
+
 
 
