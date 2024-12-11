@@ -6,7 +6,7 @@ from .exceptions import (KeySaveError,
                         InvalidKeySizeError, KeyPairGenerationError, 
                         DirectoryCreationError)
 
-def generateKeyPair(uid, key_size=2048, key_directory="tmp/keys", private_key_password=None):
+def generateKeyPair(uid:str, key_size:int=2048, key_directory:str="tmp/keys", private_key_password:str=None):
     """
     Génère une paire de clés RSA et les enregistre dans un sous-dossier avec l'UID du propriétaire.
     

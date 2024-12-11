@@ -20,9 +20,9 @@ def is_valid_email(email):
     """ Vérifie si l'email a un format valide. """
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
 
-def createSignedCert(public_key_path, pseudo, company, department, city, region, country_code, email,
-                     valid_days, ca_private_key_path, ca_cert_path, ca_key_password=None,
-                     output_folder="certificate", output_filename=None):
+def createSignedCert(public_key_path:str, pseudo:str, company:str, department:str, city:str, region:str, country_code:str, email:str,
+                     valid_days:int, ca_private_key_path:str, ca_cert_path:str, ca_key_password:str=None,
+                     output_folder:str="certificate", output_filename:str=None):
     """
     Crée un certificat utilisateur et le signe avec la clé privée de la CA intermédiaire.
 
@@ -39,7 +39,7 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
         ca_private_key_path (str): Chemin vers la clé privée de la CA intermédiaire.
         ca_cert_path (str): Chemin vers le certificat de la CA intermédiaire.
         ca_key_password (str, optional): Mot de passe pour déchiffrer la clé privée de la CA (si nécessaire).
-        output_folder (str, optional): Dossier de destination du certificat. ( "\""" le back slash est utilisé comme séparateur) Par défaut "certificate".
+        output_folder (str, optional): Dossier de destination du certificat. Par défaut "certificate".
         output_filename (str, optional): Nom du fichier de sortie sans extension. Par défaut "<pseudo>_certificate".
 
     Returns:
@@ -53,6 +53,12 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
         PrivateKeyLoadError: Si le chargement de la clé privée de la CA échoue.
         CertificateSaveError: Si l'enregistrement du certificat échoue.
     """
+
+    # Convertir les chemins en chemins absolus
+    public_key_path = os.path.abspath(public_key_path)
+    ca_private_key_path = os.path.abspath(ca_private_key_path)
+    ca_cert_path = os.path.abspath(ca_cert_path)
+    output_folder = os.path.abspath(output_folder)
 
     # Valider les paramètres d'entrée
     if not pseudo or not company:
@@ -72,9 +78,9 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
                 backend=default_backend()
             )
     except FileNotFoundError:
-        raise PublicKeyFileNotFoundError("Le fichier de clé publique de l'utilisateur est introuvable.")
+        raise PublicKeyFileNotFoundError(f"Le fichier de clé publique est introuvable : {public_key_path}")
     except Exception as e:
-        raise PublicKeyLoadError(f"Erreur lors du chargement de la clé publique: {e}")
+        raise PublicKeyLoadError(f"Erreur lors du chargement de la clé publique ({public_key_path}) : {e}")
 
     # Charger le certificat de la CA intermédiaire
     try:
@@ -84,9 +90,9 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
                 backend=default_backend()
             )
     except FileNotFoundError:
-        raise CertificateLoadError("Le fichier de certificat de la CA intermédiaire est introuvable.")
+        raise CertificateLoadError(f"Le fichier de certificat de la CA intermédiaire est introuvable : {ca_cert_path}")
     except Exception as e:
-        raise CertificateLoadError(f"Erreur lors du chargement du certificat de la CA: {e}")
+        raise CertificateLoadError(f"Erreur lors du chargement du certificat de la CA ({ca_cert_path}) : {e}")
 
     # Charger la clé privée de la CA intermédiaire
     try:
@@ -97,9 +103,9 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
                 backend=default_backend()
             )
     except FileNotFoundError:
-        raise PrivateKeyFileNotFoundError("Le fichier de clé privée de la CA intermédiaire est introuvable.")
+        raise PrivateKeyFileNotFoundError(f"Le fichier de clé privée de la CA intermédiaire est introuvable : {ca_private_key_path}")
     except Exception as e:
-        raise PrivateKeyLoadError(f"Erreur lors du chargement de la clé privée de la CA: {e}")
+        raise PrivateKeyLoadError(f"Erreur lors du chargement de la clé privée de la CA ({ca_private_key_path}) : {e}")
 
     # Créer les informations du sujet (utilisateur)
     subject = x509.Name([
@@ -151,7 +157,7 @@ def createSignedCert(public_key_path, pseudo, company, department, city, region,
         with open(output_path, "wb") as cert_file:
             cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
     except Exception as e:
-        raise CertificateSaveError(f"Erreur lors de l'enregistrement du certificat: {e}")
+        raise CertificateSaveError(f"Erreur lors de l'enregistrement du certificat ({output_path}) : {e}")
     
     return output_path
 
