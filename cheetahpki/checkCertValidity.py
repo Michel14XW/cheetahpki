@@ -7,7 +7,7 @@ from .exceptions import (
     CertificateLoadError
 )
 
-def checkCertValidity(cert_file):
+def checkCertValidity(cert_file:str):
     """
     Vérifie la validité d'un certificat en fonction de sa date d'expiration.
 

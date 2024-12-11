@@ -1,7 +1,7 @@
-from .checkCertValidity import checkCertValidity
+from .checkCertValidity import checkCertValidity #TODO Renommer les autres fonction en nom_propre ainsi que les fichiers
 from .createSelfSignedRootCert import is_valid_email, createSelfSignedRootCert
 from .createSignedCert import is_valid_email, createSignedCert
-from .getCertInfo import get_serial_number
+from .getCertInfo import get_serial_number #TODO faire ressortir la hierarchie
 from .getCertInfo import get_owner
 from .getCertInfo import get_validity_end
 from .getCertInfo import get_validity_start

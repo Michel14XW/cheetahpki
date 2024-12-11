@@ -2,7 +2,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 
-def get_owner(cert_pem_path):
+def get_owner(cert_pem_path:str):
     """
     Prend en entrée un chemin vers un fichier .pem de certificat et retourne le propriétaire du certificat (CN - Common Name).
     

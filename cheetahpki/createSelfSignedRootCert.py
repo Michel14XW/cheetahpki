@@ -18,9 +18,9 @@ def is_valid_email(email):
     """ Vérifie si l'email a un format valide. """
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
 
-def createSelfSignedRootCert(pseudo, company, city, region, country_code, email, 
-                             valid_days, private_key_path, key_password=None, 
-                             output_folder=None, output_filename=None):
+def createSelfSignedRootCert(pseudo:str, company:str, city:str, region:str, country_code:str, email:str, 
+                             valid_days:int, private_key_path:str, key_password:str=None, 
+                             output_folder:str=None, output_filename:str=None):
     """
     Crée un certificat auto-signé pour une CA root sans champ département.
 
@@ -68,9 +68,9 @@ def createSelfSignedRootCert(pseudo, company, city, region, country_code, email,
                 backend=default_backend()
             )
     except FileNotFoundError:
-        raise PrivateKeyFileNotFoundError("Le fichier de clé privée est introuvable.")
+        raise PrivateKeyFileNotFoundError(f"Le fichier de clé privée est introuvable au chemin spécifié : {private_key_path}")
     except (ValueError, TypeError) as e:
-        raise PrivateKeyLoadError(f"Échec du chargement de la clé privée : {e}")
+        raise PrivateKeyLoadError(f"Échec du chargement de la clé privée ({private_key_path}) : {e}")
 
     # Créer les informations du sujet (la CA root elle-même)
     subject = issuer = x509.Name([
@@ -117,7 +117,7 @@ def createSelfSignedRootCert(pseudo, company, city, region, country_code, email,
 
     # Définir le nom du fichier de sortie avec UID par défaut si aucun nom n'est spécifié
     if not output_filename:
-        uid = uuid.uuid4().hex[:8]
+        uid = uuid.uuid4()
         output_filename = f"root_ca_certificate_{uid}"
     
     # Ajouter l'extension .pem si elle n'est pas déjà incluse
@@ -161,3 +161,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 """
+
+"keys/root/root_CA_private_key.pem"
