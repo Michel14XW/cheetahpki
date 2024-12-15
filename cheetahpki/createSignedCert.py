@@ -149,6 +149,9 @@ def createSignedCert(public_key_path:str, pseudo:str, company:str, department:st
 
     # Définir le nom et l'emplacement de sauvegarde du certificat
     output_filename = output_filename or f"{pseudo}_certificate.pem"
+    # Ajouter l'extension .pem si elle n'est pas déjà incluse
+    if not output_filename.endswith('.pem'):
+        output_filename += '.pem'
     output_path = os.path.join(output_folder, output_filename)
     
     # Enregistrer le certificat dans le fichier spécifié
@@ -182,6 +185,32 @@ if __name__ == "__main__":
     cert_file = createSignedCert(
         public_key_path, pseudo, company, department, city, region, country_code, email,
         valid_days, ca_private_key_path, ca_cert_path, ca_key_password
+    )
+    print(f"Certificat généré et enregistré à : {cert_file}")
+"""
+
+"""
+if __name__ == "__main__":
+    public_key_path = "keys\CA_Inter_1_public_key.pem"
+    pseudo = "CA_inter1"
+    company = "vXtend"
+    department = "DRH"
+    city = "Tsevie"
+    region = "Maritime"
+    country_code = "TG"
+    email = "cainter1@test.test"
+    valid_days = 365
+    ca_private_key_path = "keys/root/root_CA_private_key.pem"
+    ca_cert_path = "certificate/root/root_ca_certificate_52172150.pem"
+    ca_key_password = None
+    output_folder="certificate"
+    output_filename = "23caInter"
+    
+    
+
+    cert_file = createSignedCert(
+        public_key_path, pseudo, company, department, city, region, country_code, email,
+        valid_days, ca_private_key_path, ca_cert_path, ca_key_password, output_folder, output_filename
     )
     print(f"Certificat généré et enregistré à : {cert_file}")
 """
