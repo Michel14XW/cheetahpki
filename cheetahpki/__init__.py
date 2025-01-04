@@ -24,8 +24,10 @@ from .exceptions import (
     DirectoryCreationError,
 )
 from .generateKeyPair import generateKeyPair
+from .fingerprint import get_certificate_fingerprint
+from .fingerprint import get_public_key_fingerprint
 
-__version__ = "0.0.5"
+__version__ = "0.0.8"
 VERSION = __version__.split(".")
 
 __all__ = (
@@ -54,6 +56,8 @@ __all__ = (
     'get_serial_number',
     'get_validity_start',
     'get_validity_end',
+    'get_certificate_fingerprint',
+    'get_public_key_fingerprint',
 )
 
 # update version 0.0.4

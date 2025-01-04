@@ -1,7 +1,7 @@
 # CheetahPKI
 
 
-**Version**: 0.0.7  
+**Version**: 0.0.8  
 **Description**: Package pour la génération de paires de clés et de certificats numériques.  
 
 CheetahPKI est un package Python permettant de générer des paires de clés RSA, de créer des certificats auto-signés, des certificats signés par une autorité de certification (CA), et de récupérer des informations sur les certificats.
@@ -13,6 +13,7 @@ CheetahPKI est un package Python permettant de générer des paires de clés RSA
 - **Création de certificats signés** : Permet de signer un certificat utilisateur via une clé privée CA.
 - **Vérification de validité** : Vérifie la date d'expiration d'un certificat pour confirmer sa validité.
 - **Extraction d'informations sur les certificats** : Obtenez des informations telles que le nom du propriétaire, le numéro de série, et les dates de validité.
+- **Calculer l'empreinte d'une clé publique et d'un certificat** : Obtenez l'empreinte SHA256 de fichiers comme la clé publique et le certificat.
 
 ## Installation
 
@@ -28,6 +29,7 @@ pip install git+https://github.com/Michel14XW/cheetahpki.git
 cheetahpki/
 ├── generateKeyPair.py
 ├── exceptions.py
+├── fingerprint.py
 ├── createSelfSignedRootCert.py
 ├── createSignedCert.py
 ├── checkCertValidity.py

@@ -36,7 +36,7 @@ print(f"Le propriétaire du certificat est : {owner}")
 
 
 
-def get_serial_number(cert_pem_path):
+def get_serial_number(cert_pem_path:str):
     """
     Prend en entrée un chemin vers un fichier .pem de certificat et retourne le numéro de série du certificat.
     
@@ -66,7 +66,7 @@ print(f"Le numéro de série du certificat est : {serial_number}")
 
 
 
-def get_validity_end(cert_pem_path):
+def get_validity_end(cert_pem_path:str):
     """
     Prend en entrée un chemin vers un fichier .pem de certificat et retourne la date de fin de validité du certificat.
     
@@ -97,7 +97,7 @@ print(f"Le certificat expire le : {validity_end}")
 
 
 
-def get_validity_start(cert_pem_path):
+def get_validity_start(cert_pem_path:str):
     """
     Prend en entrée un chemin vers un fichier .pem de certificat et retourne la date de début de validité du certificat.
     
