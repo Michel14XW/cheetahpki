@@ -20,11 +20,11 @@ def is_valid_email(email):
     """ Vérifie si l'email a un format valide. """
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
 
-def createSignedCert(public_key_path:str, pseudo:str, company:str, department:str, city:str, region:str, country_code:str, email:str,
+def createSignedInterCert(public_key_path:str, pseudo:str, company:str, department:str, city:str, region:str, country_code:str, email:str,
                      valid_days:int, ca_private_key_path:str, ca_cert_path:str, ca_key_password:str=None, alt_names: list[str] = None, 
                      ip_addresses: list[str] = None, output_folder:str="certificate", output_filename:str=None):
     """
-    Crée un certificat utilisateur et le signe avec la clé privée de la CA intermédiaire.
+    Crée un certificat de CA Intermédiaire et le signe avec la clé privée de la CA root.
 
     Args:
         public_key_path (str): Chemin vers la clé publique de l'utilisateur à certifier.
@@ -131,13 +131,13 @@ def createSignedCert(public_key_path:str, pseudo:str, company:str, department:st
 
     # Préparer les extensions
     extensions = [
-        x509.BasicConstraints(ca=False, path_length=None),
+        x509.BasicConstraints(ca=True, path_length=0),  # CA intermédiaire avec délégation limitée
         x509.KeyUsage(
             digital_signature=True,
-            key_cert_sign=False,
-            crl_sign=False,
-            key_encipherment=True,
-            data_encipherment=True,
+            key_cert_sign=True,
+            crl_sign=True,
+            key_encipherment=False,
+            data_encipherment=False,
             content_commitment=False,
             key_agreement=False,
             encipher_only=False,
@@ -151,7 +151,9 @@ def createSignedCert(public_key_path:str, pseudo:str, company:str, department:st
             [x509.RFC822Name(email)] +
             [x509.DNSName(name) for name in alt_names or []] +
             [x509.IPAddress(ipaddress.ip_address(ip)) for ip in ip_addresses or []]
-        )
+        ),
+        x509.SubjectKeyIdentifier.from_public_key(public_key),
+        x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_private_key.public_key())
     ]
     
     # Construction du certificat utilisateur
@@ -216,7 +218,7 @@ if __name__ == "__main__":
     ca_cert_path = input("Chemin du certificat de la CA intermédiaire : ")
     ca_key_password = input("Mot de passe pour la clé privée de la CA (laisser vide si aucun) : ") or None
 
-    cert_file = createSignedCert(
+    cert_file = createSignedInterCert(
         public_key_path, pseudo, company, department, city, region, country_code, email,
         valid_days, ca_private_key_path, ca_cert_path, ca_key_password
     )
@@ -225,26 +227,26 @@ if __name__ == "__main__":
 
 """
 if __name__ == "__main__":
-    public_key_path = "tmp/keys/client2_public_key.pem"
-    pseudo = "Client2"
+    public_key_path = "tmp/keys/ca_inter2_public_key.pem"
+    pseudo = "CA_inter2"
     company = "UCAO"
     department = "Juridique"
     city = "Notsè"
     region = "Maritime"
     country_code = "TG"
-    email = "client2@ucao.tg"
-    valid_days = 90
-    ca_private_key_path = "tmp/keys/ca_inter2_private_key.pem"
-    ca_cert_path = "tmp/certificate/02caInter.pem"
+    email = "cainter2@ucao.tg"
+    valid_days = 365
+    ca_private_key_path = "tmp/keys/root/ca_root_private_key.pem"
+    ca_cert_path = "tmp/certificate/root/root_ca_certificate_e80f80d1-c761-48a6-b1a9-db5729f49923.pem"
     ca_key_password = None
     alt_names = ["cainter.ucao.tg", "lab.ucao.local"]
     ip_addresses = ["192.168.1.10"]
     output_folder="tmp/certificate"
-    output_filename = "client2_certificate"
+    output_filename = "02caInter"
     
     
 
-    cert_file = createSignedCert(
+    cert_file = createSignedInterCert(
         public_key_path, pseudo, company, department, city, region, country_code, email,
         valid_days, ca_private_key_path, ca_cert_path, ca_key_password, alt_names, ip_addresses, output_folder, output_filename
     )

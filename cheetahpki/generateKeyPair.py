@@ -6,7 +6,7 @@ from .exceptions import (KeySaveError,
                         InvalidKeySizeError, KeyPairGenerationError, 
                         DirectoryCreationError)
 
-def generateKeyPair(uid:str, key_size:int=2048, key_directory:str="tmp/keys", private_key_password:str=None):
+def generateKeyPair(uid:str, key_size:int=4096, key_directory:str="tmp/keys", private_key_password:str=None):
     """
     Génère une paire de clés RSA et les enregistre dans un sous-dossier avec l'UID du propriétaire.
     
@@ -102,6 +102,19 @@ if __name__ == "__main__":
     else:
         private_key_password = None
 
+    private_key_file, public_key_file = generateKeyPair(uid, key_directory=key_directory, private_key_password=private_key_password)
+
+    print(f"Clé privée enregistrée sous: {private_key_file}")
+    print(f"Clé publique enregistrée sous: {public_key_file}")
+"""
+
+"""
+# Exemple d'utilisation :
+if __name__ == "__main__":
+    uid = "client2"
+    key_directory = "tmp/keys"
+    private_key_password = None
+    
     private_key_file, public_key_file = generateKeyPair(uid, key_directory=key_directory, private_key_password=private_key_password)
 
     print(f"Clé privée enregistrée sous: {private_key_file}")
