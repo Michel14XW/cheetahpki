@@ -105,6 +105,22 @@ def createSelfSignedRootCert(pseudo:str, company:str, city:str, region:str, coun
     ).add_extension(
         x509.BasicConstraints(ca=True, path_length=None),  # Indique que c'est un certificat CA
         critical=True
+    ).add_extension(
+        x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            crl_sign=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            content_commitment=False,
+            key_agreement=False,
+            encipher_only=False,
+            decipher_only=False
+        ),
+        critical=True
+    ).add_extension(
+        x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+        critical=False
     ).sign(
         private_key=private_key,
         algorithm=hashes.SHA256(),
@@ -163,3 +179,25 @@ if __name__ == "__main__":
 """
 
 "keys/root/root_CA_private_key.pem"
+
+"""
+# Exemple d'utilisation
+if __name__ == "__main__":
+    pseudo = "ca_root"
+    company = "UCAO"
+    city = "Lomé"
+    region = "Maritime"
+    country_code = "TG"
+    email = "caroot@ucao.tg"
+    valid_days = 3650
+    private_key_path = "tmp/keys/root/ca_root_private_key.pem"
+    key_password = None
+    output_folder = "tmp/certificate/root"
+    output_filename = None
+    
+    try:
+        cert_file = createSelfSignedRootCert(pseudo, company, city, region, country_code, email, valid_days, private_key_path, key_password, output_folder, output_filename)
+        print(f"Certificat CA root auto-signé enregistré sous: {cert_file}")
+    except Exception as e:
+        print(e)
+"""

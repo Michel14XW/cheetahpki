@@ -26,8 +26,11 @@ from .exceptions import (
 from .generateKeyPair import generateKeyPair
 from .fingerprint import get_certificate_fingerprint
 from .fingerprint import get_public_key_fingerprint
+from .createSignedInterCert import createSignedInterCert
+from .generateCsr import generateCsr
+from .parseCsr import parseCsr
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 VERSION = __version__.split(".")
 
 __all__ = (
@@ -58,6 +61,9 @@ __all__ = (
     'get_validity_end',
     'get_certificate_fingerprint',
     'get_public_key_fingerprint',
+    'createSignedInterCert',
+    'generateCsr',
+    'parseCsr',
 )
 
-# update version 0.0.4
+# update version 0.0.9
