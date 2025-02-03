@@ -35,11 +35,11 @@ def parseCsr(csr_file_path: str) -> dict:
 
     # Préparer le dictionnaire de sortie
     csr_data = {
-        "country": subject_info.get("countryName"),
-        "state": subject_info.get("stateOrProvinceName"),
+        "pseudo": subject_info.get("commonName"),
+        "company": subject_info.get("organizationName"),
         "city": subject_info.get("localityName"),
-        "organization": subject_info.get("organizationName"),
-        "common_name": subject_info.get("commonName"),
+        "region": subject_info.get("stateOrProvinceName"),
+        "country_code": subject_info.get("countryName"),
         "email": subject_info.get("emailAddress"),
         "alt_names": alt_names,
         "ip_addresses": ip_addresses
