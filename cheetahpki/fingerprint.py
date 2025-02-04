@@ -3,7 +3,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
-def get_public_key_fingerprint(public_key_pem_path:str):
+def getPublicKeyFingerprint(public_key_pem_path:str):
     """
     Calcule l'empreinte SHA-256 d'une clé publique au format PEM.
     
@@ -43,7 +43,7 @@ print(f"Empreinte SHA-256 de la clé publique : {fingerprint}")
 
 
 
-def get_certificate_fingerprint(certificate_pem_path:str):
+def getCertificateFingerprint(certificate_pem_path:str):
     """
     Calcule l'empreinte SHA-256 d'un certificat au format PEM.
     

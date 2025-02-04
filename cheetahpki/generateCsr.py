@@ -5,7 +5,7 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import serialization
 import ipaddress
 
-def generate_csr(
+def generateCsr(
     private_key: rsa.RSAPrivateKey,
     country: str,
     state: str,

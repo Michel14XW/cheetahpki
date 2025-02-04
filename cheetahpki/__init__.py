@@ -24,8 +24,8 @@ from .exceptions import (
     DirectoryCreationError,
 )
 from .generateKeyPair import generateKeyPair
-from .fingerprint import get_certificate_fingerprint
-from .fingerprint import get_public_key_fingerprint
+from .fingerprint import getCertificateFingerprint
+from .fingerprint import getPublicKeyFingerprint
 from .createSignedInterCert import createSignedInterCert
 from .generateCsr import generateCsr
 from .parseCsr import parseCsr
@@ -59,8 +59,8 @@ __all__ = (
     'get_serial_number',
     'get_validity_start',
     'get_validity_end',
-    'get_certificate_fingerprint',
-    'get_public_key_fingerprint',
+    'getCertificateFingerprint',
+    'getPublicKeyFingerprint',
     'createSignedInterCert',
     'generateCsr',
     'parseCsr',
